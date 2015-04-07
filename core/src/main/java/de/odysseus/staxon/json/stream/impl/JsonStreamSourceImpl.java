@@ -32,18 +32,43 @@ class JsonStreamSourceImpl implements JsonStreamSource {
 	 */
 	interface Scanner extends Closeable {
 		enum Symbol {
-		    START_OBJECT,
-		    END_OBJECT,
-		    START_ARRAY,
-		    END_ARRAY,
-		    COLON,
-		    COMMA,
-		    STRING,
-		    NUMBER,
-		    TRUE,
-		    FALSE,
-		    NULL,
-		    EOF;
+			START_OBJECT("START_OBJECT"),
+			SO_ARRAY("SO_ARRAY"),
+			SO_ELEMENT("SO_ELEMENT"),
+			SO_COLON_1("SO_COLON_1"),
+			SO_COLON_2("SO_COLON_2"),
+			SO_ARRAY_END("SO_ARRAY_END"),
+			SO_ARRAY_END_2("SO_ARRAY_END_2"),
+			SO_END("SO_END"),
+			SO_END_2("SO_END_2"),
+			SO_OBJECT("SO_OBJECT"),
+			SO_OBJECT_COL("SO_OBJECT_COL"),
+			SO_OBJECT_END("SO_OBJECT_END"),
+			END_OBJECT("END_OBJECT"),
+			START_ARRAY("START_ARRAY"),
+			END_ARRAY("END_ARRAY"),
+			COLON("COLON"),
+			COMMA("COMMA"),
+			STRING("STRING"),
+			NUMBER("NUMBER"),
+			TRUE("TRUE"),
+			FALSE("FALSE"),
+			NULL("NULL"),
+			EMPTY_OBJ_NAME("EMPTY_OBJ_NAME"),
+			EMPTY_OBJ_VALUE("EMPTY_OBJ_VALUE"),
+			EMPTY_OBJ_END("EMPTY_OBJ_END"),
+			EOF("EOF"),
+			EOF_OBJ("EOF_OBJ");
+
+			private String name = null;
+
+			Symbol(String name) {
+				this.name = name;
+			}
+
+			public String toString(){
+				return name;
+			}
 		}
 		Symbol nextSymbol() throws IOException;
 		String getText();
@@ -171,8 +196,7 @@ class JsonStreamSourceImpl implements JsonStreamSource {
 			throw new IOException("Unexpected token: " + token);
 		}
 	}
-	
-	@Override
+
 	public void close() throws IOException {
 		if (closeScanner) {
 			scanner.close();
@@ -194,14 +218,12 @@ class JsonStreamSourceImpl implements JsonStreamSource {
 		charOffset = scanner.getCharOffset();
 		peeked = false;
 	}
-	
-	@Override
+
 	public String name() throws IOException {
 		poll(JsonStreamToken.NAME);
 		return scanner.getText();
 	}
 
-	@Override
 	public Value value() throws IOException {
 		poll(JsonStreamToken.VALUE);
 		switch (symbol) {
@@ -224,27 +246,22 @@ class JsonStreamSourceImpl implements JsonStreamSource {
 		}
 	}
 
-	@Override
 	public void startObject() throws IOException {
 		poll(JsonStreamToken.START_OBJECT);
 	}
 
-	@Override
 	public void endObject() throws IOException {
 		poll(JsonStreamToken.END_OBJECT);
 	}
 
-	@Override
 	public void startArray() throws IOException {
 		poll(JsonStreamToken.START_ARRAY);
 	}
 
-	@Override
 	public void endArray() throws IOException {
 		poll(JsonStreamToken.END_ARRAY);
 	}
-	
-	@Override
+
 	public JsonStreamToken peek() throws IOException {
 		if (!peeked) {
 			token = next();
@@ -252,28 +269,23 @@ class JsonStreamSourceImpl implements JsonStreamSource {
 		}
 		return token;
 	}
-	
-	@Override
+
 	public int getLineNumber() {
 		return lineNumber + 1;
 	}
-	
-	@Override
+
 	public int getColumnNumber() {
 		return columnNumber + 1;
 	}
-	
-	@Override
+
 	public int getCharacterOffset() {
 		return charOffset;
 	}
-	
-	@Override
+
 	public String getPublicId() {
 		return null;
 	}
 
-	@Override
 	public String getSystemId() {
 		return null;
 	}

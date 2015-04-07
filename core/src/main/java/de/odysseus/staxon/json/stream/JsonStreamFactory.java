@@ -15,6 +15,8 @@
  */
 package de.odysseus.staxon.json.stream;
 
+import de.odysseus.staxon.json.stream.impl.Constants;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -154,6 +156,15 @@ public abstract class JsonStreamFactory {
 	 * @throws IOException
 	 */
 	public abstract JsonStreamSource createJsonStreamSource(InputStream input) throws IOException;
+
+	/**
+	 * Create stream source.
+	 * @param input
+	 * @param scanner JSON Scanner to use
+	 * @return stream source
+	 * @throws IOException
+	 */
+	public abstract JsonStreamSource createJsonStreamSource(InputStream input, Constants.SCANNER scanner) throws IOException;
 	
 	/**
 	 * Create stream source.
@@ -162,6 +173,15 @@ public abstract class JsonStreamFactory {
 	 * @throws IOException
 	 */
 	public abstract JsonStreamSource createJsonStreamSource(Reader reader) throws IOException;
+
+	/**
+	 * Create stream source.
+	 * @param reader
+	 * @param scanner JSON Scanner to use
+	 * @return stream source
+	 * @throws IOException
+	 */
+	public abstract JsonStreamSource createJsonStreamSource(Reader reader, Constants.SCANNER scanner) throws IOException;
 
 	/**
 	 * Create stream target.

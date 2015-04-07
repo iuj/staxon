@@ -17,6 +17,7 @@ package de.odysseus.staxon.json.stream.impl;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Stack;
 
 import de.odysseus.staxon.json.stream.JsonStreamTarget;
 
@@ -34,6 +35,9 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 	private final String space;
 
 	private int depth = 0;
+	private JsonStreamSourceImpl.Scanner.Symbol symbol = null;
+	private Stack<Character> symbols = new Stack<Character>();
+	private Stack<Boolean> objects = new Stack<Boolean>();
 
 	JsonStreamTargetImpl(Writer writer, boolean closeWriter) {
 		this(writer, closeWriter, null, null, null);
@@ -98,7 +102,6 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		return buffer.toString();
 	}
 
-	@Override
 	public void close() throws IOException {
 		if (closeWriter) {
 			writer.close();
@@ -107,13 +110,30 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		}
 	}
 
-	@Override
 	public void flush() throws IOException {
 		writer.flush();
 	}
 
-	@Override
 	public void name(String name) throws IOException {
+		if (Constants.EMPTY.equals(name)) {
+			writer.write(symbols.pop());
+			objects.push(false);
+			symbol = null;
+			return;
+		}
+		if (symbol == JsonStreamSourceImpl.Scanner.Symbol.START_OBJECT) {
+			symbol = null;
+			if (Constants.ARRAY.equals(name)
+					|| Constants.ARRAY_ELEM.equals(name)
+					|| Constants.OBJECT.equals(name)) {
+				symbols.pop();
+				objects.push(true);
+				return;
+			}
+			objects.push(false);
+			writer.write(symbols.pop());
+		}
+		symbol = null;
 		if (namePos[depth] > 1) {
 			writer.write(',');
 		}
@@ -132,8 +152,8 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		writer.write(':');
 	}
 
-	@Override
 	public void value(Object value) throws IOException {
+		symbol = null;
 		if (arrayPos[depth] > 0) {
 			if (arrayPos[depth] > 1) {
 				writer.write(',');
@@ -146,6 +166,9 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		if (value == null) {
 			writer.write("null");
 		} else if (value instanceof String) {
+			if (Constants.EMPTY_VALUE.equals(value)) {
+				return;
+			}
 			writer.write('"');
 			writer.write(encode((String) value));
 			writer.write('"');
@@ -154,7 +177,6 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		}
 	}
 
-	@Override
 	public void startObject() throws IOException {
 		if (arrayPos[depth] > 0) {
 			if (arrayPos[depth] > 1) {
@@ -165,15 +187,20 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		if (space != null && (depth > 0 || arrayPos[depth] > 0)) {
 			writer.write(space);
 		}
-		writer.write('{');
+		symbols.push('{');
+		symbol = JsonStreamSourceImpl.Scanner.Symbol.START_OBJECT;
 		depth++;
 		namePos[depth] = 1;
 	}
 
-	@Override
 	public void endObject() throws IOException {
+		symbol = null;
 		namePos[depth] = 0;
 		depth--;
+		boolean skipEndObject = objects.pop();
+		if (skipEndObject) {
+			return;
+		}
 		if (indent != null) {
 			writer.write(indent[depth]);
 		} else if (space != null) {
@@ -185,8 +212,8 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		}
 	}
 
-	@Override
 	public void startArray() throws IOException {
+		symbol = null;
 		if (arrayPos[depth] > 0) {
 			throw new IOException("Nested arrays are not supported!");
 		}
@@ -197,8 +224,8 @@ class JsonStreamTargetImpl implements JsonStreamTarget {
 		arrayPos[depth] = 1;
 	}
 
-	@Override
 	public void endArray() throws IOException {
+		symbol = null;
 		arrayPos[depth] = 0;
 		if (space != null) {
 			writer.write(space);

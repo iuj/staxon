@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import de.odysseus.staxon.json.stream.JsonStreamFactory;
 import de.odysseus.staxon.json.stream.JsonStreamSource;
 import de.odysseus.staxon.json.stream.JsonStreamTarget;
+import de.odysseus.staxon.json.stream.impl.Constants;
 
 public class JacksonStreamFactory extends JsonStreamFactory {
 	private final JsonFactory jsonFactory;
@@ -57,10 +58,20 @@ public class JacksonStreamFactory extends JsonStreamFactory {
 	public JsonStreamSource createJsonStreamSource(InputStream input) throws IOException {
 		return new JacksonStreamSource(configure(jsonFactory.createParser(input)));
 	}
-	
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(InputStream input, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
 	@Override
 	public JsonStreamSource createJsonStreamSource(Reader reader) throws IOException {
 		return new JacksonStreamSource(configure(jsonFactory.createParser(reader)));
+	}
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(Reader reader, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -31,13 +31,19 @@ import com.google.gson.stream.JsonWriter;
 import de.odysseus.staxon.json.stream.JsonStreamFactory;
 import de.odysseus.staxon.json.stream.JsonStreamSource;
 import de.odysseus.staxon.json.stream.JsonStreamTarget;
+import de.odysseus.staxon.json.stream.impl.Constants;
 
 public class GsonStreamFactory extends JsonStreamFactory {
 	@Override
 	public JsonStreamSource createJsonStreamSource(InputStream input) throws IOException {
 		return createJsonStreamSource(new InputStreamReader(input));
 	}
-	
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(InputStream input, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
 	@Override
 	public JsonStreamSource createJsonStreamSource(Reader reader) {
 		JsonReader jsonReader = new JsonReader(new FilterReader(reader) {
@@ -48,6 +54,11 @@ public class GsonStreamFactory extends JsonStreamFactory {
 		});
 		jsonReader.setLenient(false);
 		return new GsonStreamSource(jsonReader);
+	}
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(Reader reader, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

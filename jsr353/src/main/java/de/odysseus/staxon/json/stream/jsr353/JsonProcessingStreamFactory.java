@@ -31,6 +31,7 @@ import javax.json.stream.JsonParserFactory;
 import de.odysseus.staxon.json.stream.JsonStreamFactory;
 import de.odysseus.staxon.json.stream.JsonStreamSource;
 import de.odysseus.staxon.json.stream.JsonStreamTarget;
+import de.odysseus.staxon.json.stream.impl.Constants;
 
 /**
  * JSON-P (<code>javax.json</code>) <code>JsonStreamFactory</code> implementation.
@@ -83,10 +84,20 @@ public class JsonProcessingStreamFactory extends JsonStreamFactory {
 	public JsonStreamSource createJsonStreamSource(InputStream input) throws IOException {
 		return new JsonProcessingStreamSource(createJsonParserFactory().createParser(input));
 	}
-	
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(InputStream input, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
 	@Override
 	public JsonStreamSource createJsonStreamSource(Reader reader) {
 		return new JsonProcessingStreamSource(createJsonParserFactory().createParser(reader));
+	}
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(Reader reader, Constants.SCANNER scanner) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

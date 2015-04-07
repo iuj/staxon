@@ -61,9 +61,24 @@ public class JsonStreamFactoryImpl extends JsonStreamFactory {
 	public JsonStreamSource createJsonStreamSource(InputStream input) throws IOException {
 		return createJsonStreamSource(new InputStreamReader(input, "UTF-8"));
 	}
-	
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(InputStream input, Constants.SCANNER scanner) throws IOException {
+		return createJsonStreamSource(new InputStreamReader(input, "UTF-8"), scanner);
+	}
+
 	@Override
 	public JsonStreamSource createJsonStreamSource(Reader reader) {
+		return new JsonStreamSourceImpl(new Yylex(reader), false);
+	}
+
+	@Override
+	public JsonStreamSource createJsonStreamSource(Reader reader, Constants.SCANNER scanner) {
+		if (scanner == Constants.SCANNER.SCANNER_1) {
+			return new JsonStreamSourceImpl(new JsonScanner(reader), false);
+		} else if (scanner == Constants.SCANNER.SCANNER_2) {
+			return new JsonStreamSourceImpl(new JsonScanner2(reader), false);
+		}
 		return new JsonStreamSourceImpl(new Yylex(reader), false);
 	}
 
